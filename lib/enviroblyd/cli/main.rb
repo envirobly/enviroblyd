@@ -38,7 +38,7 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
   end
 
   private
-    def http(url, type: Net::HTTP::Get, headers: {}, retry_interval: 1, retries: 30, backoff: false, success_codes: 200..299, tries: 1)
+    def http(url, type: Net::HTTP::Get, headers: {}, retry_interval: 2, retries: 30, backoff: false, success_codes: 200..299, tries: 1)
       uri = URI(url)
       http = Net::HTTP.new uri.host, uri.port
       http.use_ssl = true if uri.scheme == "https"
