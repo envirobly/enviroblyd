@@ -39,8 +39,14 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
 
       yield request if block_given?
 
-      response = http.request(request)
-      if success_codes.include?(response.code.to_i)
+      response =
+        begin
+          http.request(request)
+        rescue Net::OpenTimeout, Net::ReadTimeout, Errno::EHOSTUNREACH, Errno::EHOSTDOWN
+          nil
+        end
+
+      if response && success_codes.include?(response.code.to_i)
         response
       elsif retries <= tries
         $stderr.puts "Retried #{tries} times. Aborting."
