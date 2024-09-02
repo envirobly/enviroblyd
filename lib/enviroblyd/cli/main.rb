@@ -35,7 +35,7 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
       if success_codes.include?(response.code.to_i)
         response
       elsif retries <= tries
-        $stderr.puts "Retried #{tries}. Aborting."
+        $stderr.puts "Retried #{tries} times. Aborting."
         exit 1
       else
         sleep retry_interval
