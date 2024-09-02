@@ -53,7 +53,7 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
         exit 1
       else
         sleep_time = (backoff == :exponential) ? (retry_interval * tries) : retry_interval
-        puts "Try #{uri} in #{sleep_time}s"
+        $stderr.puts "Retry #{uri} in #{sleep_time}s"
         sleep sleep_time
         http(url, type:, retry_interval:, retries:, backoff:, success_codes:, tries: (tries + 1))
       end
