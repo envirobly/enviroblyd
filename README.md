@@ -4,6 +4,9 @@ Envirobly instance daemon
 ```sh
 ruby -Ilib/ bin/enviroblyd version
 
+# In development override the hosts:
 export ENVIROBLYD_IMDS_HOST=envirobly.test
-ruby -Ilib/ bin/enviroblyd metadata
+export ENVIROBLYD_API_HOST=envirobly.test
+
+ruby -Ilib/ bin/enviroblyd boot
 ```

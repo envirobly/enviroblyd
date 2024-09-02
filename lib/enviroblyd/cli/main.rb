@@ -10,16 +10,20 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
 
   TOKEN_TTL_SECONDS = 30
   IMDS_HOST = ENV.fetch("ENVIROBLYD_IMDS_HOST", "[fd00:ec2::254]")
-  desc "metadata", "Get IMDSv2 metadata"
-  def metadata
+  API_HOST = ENV.fetch("ENVIROBLYD_API_HOST", "envirobly.com")
+  desc "boot", "Get IMDSv2 metadata"
+  def boot
     token = http("http://#{IMDS_HOST}/latest/api/token").body.chomp("")
     puts "token: #{token} ."
     instance_id =  http("http://#{IMDS_HOST}/latest/meta-data/instance-id").body.chomp("")
     puts "instance_id: #{instance_id} ."
+
+    response = http("https://#{API_HOST}/api/v1/boots/#{instance_id}", retry_interval: 3, retries: 5, backoff: :exponential)
+    puts "/api/v1/boots response code: #{response.code}"
   end
 
   private
-    def http(url, type: Net::HTTP::Get, headers: {}, retry_interval: 1, retries: 30, success_codes: 200..299, tries: 0)
+    def http(url, type: Net::HTTP::Get, headers: {}, retry_interval: 1, retries: 30, backoff: false, success_codes: 200..299, tries: 1)
       uri = URI(url)
       http = Net::HTTP.new uri.host, uri.port
       http.use_ssl = true if uri.scheme == "https"
@@ -38,8 +42,10 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
         $stderr.puts "Retried #{tries} times. Aborting."
         exit 1
       else
-        sleep retry_interval
-        http(url, type:, retry_interval:, retries:, success_codes:, tries: (tries + 1))
+        sleep_time = (backoff == :exponential) ? (retry_interval * tries) : retry_interval
+        puts "Try #{uri} in #{sleep_time}s"
+        sleep sleep_time
+        http(url, type:, retry_interval:, retries:, backoff:, success_codes:, tries: (tries + 1))
       end
     end
 end
