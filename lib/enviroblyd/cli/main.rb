@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "net/http"
 require "uri"
+require "open3"
 
 class Enviroblyd::Cli::Main < Enviroblyd::Base
   desc "version", "Show version"
@@ -13,14 +14,24 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
   API_HOST = ENV.fetch("ENVIROBLYD_API_HOST", "envirobly.com")
   desc "boot", "Get IMDSv2 metadata"
   def boot
-    token = http("http://#{IMDS_HOST}/latest/api/token",
+    @token = http("http://#{IMDS_HOST}/latest/api/token",
       type: Net::HTTP::Put, headers: { "X-aws-ec2-metadata-token-ttl-seconds" => TOKEN_TTL_SECONDS.to_s }).
       body.chomp("")
-    puts "token: #{token} ."
-    instance_id =  http("http://#{IMDS_HOST}/latest/meta-data/instance-id",
-      headers: { "X-aws-ec2-metadata-token" => token }).
+    puts "token: #{@token} ."
+    instance_id = http("http://#{IMDS_HOST}/latest/meta-data/instance-id",
+      headers: { "X-aws-ec2-metadata-token" => @token }).
       body.chomp("")
     puts "instance_id: #{instance_id} ."
+
+    process_user_data
+    unless @exit_code.nil?
+      puts @stdout
+      $stderr.puts @stderr
+      unless @exit_code == 0
+        $stderr.puts "User data script exited with code: #{@exit_code}. Aborting."
+        exit 1
+      end
+    end
 
     response = http("https://#{API_HOST}/api/v1/boots/#{instance_id}", retry_interval: 3, retries: 5, backoff: :exponential)
     puts "/api/v1/boots response code: #{response.code}"
@@ -56,6 +67,29 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
         $stderr.puts "Retry #{uri} in #{sleep_time}s"
         sleep sleep_time
         http(url, type:, retry_interval:, retries:, backoff:, success_codes:, tries: (tries + 1))
+      end
+    end
+
+    def process_user_data
+      response = http("http://#{IMDS_HOST}/latest/user-data",
+        headers: { "X-aws-ec2-metadata-token" => @token })
+
+      if response.body.start_with?("#!/bin/bash")
+        run response.body
+      else
+        $stderr.puts "User data does not contain runable script."
+      end
+    end
+
+    RUN_TIMEOUT = "5m"
+    def run(script)
+      @stdout = @stderr = @exit_code = nil
+      Open3.popen3("timeout #{RUN_TIMEOUT} /bin/bash") do |stdin, stdout, stderr, thread|
+        stdin.puts script
+        stdin.close
+        @stdout = stdout.read
+        @stderr = stderr.read
+        @exit_code = thread.value.exitstatus
       end
     end
 end
