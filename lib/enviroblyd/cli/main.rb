@@ -53,7 +53,7 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
       response =
         begin
           http.request(request)
-        rescue Net::OpenTimeout, Net::ReadTimeout, Errno::EHOSTUNREACH, Errno::EHOSTDOWN
+        rescue
           nil
         end
 
