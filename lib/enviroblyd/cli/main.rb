@@ -19,7 +19,7 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
   end
 
   private
-    def http(url, type: Net::HTTP::Get, headers: {}, retry_interval: 1, retries: 30, success_code: 200, tries: 0)
+    def http(url, type: Net::HTTP::Get, headers: {}, retry_interval: 1, retries: 30, success_codes: 200..299, tries: 0)
       uri = URI(url)
       http = Net::HTTP.new uri.host, uri.port
       http.use_ssl = true if uri.scheme == "https"
@@ -32,14 +32,14 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
       yield request if block_given?
 
       response = http.request(request)
-      if response.code.to_i == success_code
+      if success_codes.include?(response.code.to_i)
         response
       elsif retries <= tries
         $stderr.puts "Retried #{tries}. Aborting."
         exit 1
       else
         sleep retry_interval
-        http(url, type:, retry_interval:, retries:, success_code:, tries: (tries + 1))
+        http(url, type:, retry_interval:, retries:, success_codes:, tries: (tries + 1))
       end
     end
 end
