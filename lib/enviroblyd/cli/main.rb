@@ -23,15 +23,15 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
       body.chomp("")
     puts "instance_id: #{instance_id} ."
 
-    process_user_data
-    unless @exit_code.nil?
-      puts @stdout
-      $stderr.puts @stderr
-      unless @exit_code == 0
-        $stderr.puts "User data script exited with code: #{@exit_code}. Aborting."
-        exit 1
-      end
-    end
+    # process_user_data
+    # unless @exit_code.nil?
+    #   puts @stdout
+    #   $stderr.puts @stderr
+    #   unless @exit_code == 0
+    #     $stderr.puts "User data script exited with code: #{@exit_code}. Aborting."
+    #     exit 1
+    #   end
+    # end
 
     response = http("https://#{API_HOST}/api/v1/boots/#{instance_id}", retry_interval: 3, retries: 5, backoff: :exponential)
     puts "/api/v1/boots response code: #{response.code}"
