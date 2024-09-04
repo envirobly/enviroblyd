@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "socket"
+require "json"
 
 class Enviroblyd::Daemon
   MAX_MESSAGE_SIZE = 6000 # bytes
@@ -22,18 +23,22 @@ class Enviroblyd::Daemon
       Thread.start(server.accept) do |client|
         message = client.recv(MAX_MESSAGE_SIZE)
 
-        puts "Received:"
-        puts message
+        parsed =
+          begin
+            JSON.parse message
+          rescue
+            nil
+          end
 
-        # if message.bytesize > MAX_MESSAGE_SIZE
-        #   client.puts "Error: Message too large."
-        # else
-        #   client.puts "#{Time.now} #{message}"
-        # end
+        if parsed.nil?
+          client.puts "Error parsing JSON"
+        else
+          puts "Received valid JSON:"
+          puts parsed
+          client.puts "OK"
+        end
 
         # TODO: Handle Broken pipe (Errno::EPIPE) (client closing connection before we write back)
-
-        client.puts "OK"
         client.close
       end
     end
