@@ -23,23 +23,27 @@ class Enviroblyd::Daemon
       Thread.start(server.accept) do |client|
         message = client.recv(MAX_MESSAGE_SIZE)
 
-        parsed =
+        params =
           begin
             JSON.parse message
           rescue
             nil
           end
 
-        if parsed.nil?
+        if params.nil?
           client.puts "Error parsing JSON"
         else
           puts "Received valid JSON:"
-          puts parsed
+          puts params
           client.puts "OK"
         end
 
         # TODO: Handle Broken pipe (Errno::EPIPE) (client closing connection before we write back)
         client.close
+
+        Thread.new do
+          Enviroblyd::Command.new(params).run
+        end
       end
     end
   end

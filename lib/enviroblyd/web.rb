@@ -65,18 +65,6 @@ class Enviroblyd::Web
       end
     end
 
-    # RUN_TIMEOUT = "5m"
-    # def run(script)
-    #   @stdout = @stderr = @exit_code = nil
-    #   Open3.popen3("timeout #{RUN_TIMEOUT} /bin/bash") do |stdin, stdout, stderr, thread|
-    #     stdin.puts script
-    #     stdin.close
-    #     @stdout = stdout.read
-    #     @stderr = stderr.read
-    #     @exit_code = thread.value.exitstatus
-    #   end
-    # end
-
     USER_AGENT = "enviroblyd #{Enviroblyd::VERSION}"
     def default_headers
       { "User-Agent" => USER_AGENT }
