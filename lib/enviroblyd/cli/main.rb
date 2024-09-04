@@ -14,7 +14,6 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
   TOKEN_TTL_SECONDS = 30
   IMDS_HOST = ENV.fetch("ENVIROBLYD_IMDS_HOST", "169.254.169.254")
   API_HOST = ENV.fetch("ENVIROBLYD_API_HOST", "envirobly.com")
-  INIT_URL = ENV.fetch("ENVIROBLYD_INIT_URL")
   WORKING_DIR = Pathname.new ENV.fetch("ENVIROBLYD_WORKING_DIR", "/var/envirobly/daemon")
   INITIALIZED_FILE = WORKING_DIR.join "initialized"
   desc "boot", "Start the daemon"
@@ -34,13 +33,14 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
     if File.exist?(INITIALIZED_FILE)
       puts "Skipping initialization because #{INITIALIZED_FILE} exists."
     else
-      puts "Init URL: #{INIT_URL}"
-      response = http(INIT_URL, type: Net::HTTP::Put, retry_interval: 3, retries: 10, backoff: :exponential)
+      init_url = ENV.fetch "ENVIROBLYD_INIT_URL"
+      puts "Init URL: #{init_url}"
+      response = http(init_url, type: Net::HTTP::Put, retry_interval: 3, retries: 10, backoff: :exponential)
       puts "Init response code: #{response.code}"
 
       if response.code.to_i == 200
         FileUtils.mkdir_p WORKING_DIR
-        File.write INITIALIZED_FILE, INIT_URL
+        File.write INITIALIZED_FILE, init_url
       end
     end
   end
