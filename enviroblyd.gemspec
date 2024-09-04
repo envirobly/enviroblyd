@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.license     = "MIT"
 
   spec.files = Dir[ "lib/**/*", "LICENSE" ]
-  spec.executables = %w[ enviroblyd ]
+  spec.executables = %w[ enviroblyctl enviroblyd ]
 
   # spec.add_dependency "activesupport", "~> 7.0"
   spec.add_dependency "thor", "~> 1.3"

@@ -3,4 +3,4 @@
 
 require "enviroblyd"
 
-Enviroblyd::Daemon.start
+Enviroblyd::Cli::Main.start(ARGV)
