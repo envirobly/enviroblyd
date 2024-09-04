@@ -27,6 +27,7 @@ class Enviroblyd::Command
     end
 
     puts "Command #{@url} exited with #{@exit_code}"
+    $stdout.flush
 
     @web.http(@url, type: Net::HTTP::Put, params: to_complete_params)
   end
