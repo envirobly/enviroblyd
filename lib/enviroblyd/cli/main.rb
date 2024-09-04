@@ -38,13 +38,20 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
       response = http(INIT_URL, type: Net::HTTP::Put, retry_interval: 3, retries: 10, backoff: :exponential)
       puts "Init response code: #{response.code}"
 
-      FileUtils.mkdir_p WORKING_DIR
-      File.write INITIALIZED_FILE, INIT_URL
+      if response.code.to_i == 200
+        FileUtils.mkdir_p WORKING_DIR
+        File.write INITIALIZED_FILE, INIT_URL
+      end
     end
   end
 
   private
-    def http(url, type: Net::HTTP::Get, headers: {}, retry_interval: 2, retries: 30, backoff: false, success_codes: 200..299, tries: 1)
+    def http(url, type: Net::HTTP::Get, headers: {}, retry_interval: 2, retries: 30, backoff: false, tries: 1)
+      if retries <= tries
+        $stderr.puts "Retried #{tries} times. Aborting."
+        exit 1
+      end
+
       uri = URI(url)
       http = Net::HTTP.new uri.host, uri.port
       http.use_ssl = true if uri.scheme == "https"
@@ -60,19 +67,17 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
         begin
           http.request(request)
         rescue
-          nil
+          :retry
         end
 
-      if response && success_codes.include?(response.code.to_i)
-        response
-      elsif retries <= tries
-        $stderr.puts "Retried #{tries} times. Aborting."
-        exit 1
-      else
+      # https://developers.cloudflare.com/support/troubleshooting/cloudflare-errors/troubleshooting-cloudflare-1xxx-errors/
+      if response == :retry || (500..599).include?(response.code.to_i)
         sleep_time = (backoff == :exponential) ? (retry_interval * tries) : retry_interval
         $stderr.puts "Retry #{uri} in #{sleep_time}s"
         sleep sleep_time
-        http(url, type:, retry_interval:, retries:, backoff:, success_codes:, tries: (tries + 1))
+        http(url, type:, retry_interval:, retries:, backoff:, tries: (tries + 1))
+      else
+        response
       end
     end
 
