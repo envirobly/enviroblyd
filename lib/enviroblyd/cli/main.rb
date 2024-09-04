@@ -23,16 +23,6 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
       body.chomp("")
     puts "instance_id: #{instance_id} ."
 
-    # process_user_data
-    # unless @exit_code.nil?
-    #   puts @stdout
-    #   $stderr.puts @stderr
-    #   unless @exit_code == 0
-    #     $stderr.puts "User data script exited with code: #{@exit_code}. Aborting."
-    #     exit 1
-    #   end
-    # end
-
     response = http("https://#{API_HOST}/api/v1/boots/#{instance_id}", retry_interval: 3, retries: 5, backoff: :exponential)
     puts "/api/v1/boots response code: #{response.code}"
   end
@@ -67,17 +57,6 @@ class Enviroblyd::Cli::Main < Enviroblyd::Base
         $stderr.puts "Retry #{uri} in #{sleep_time}s"
         sleep sleep_time
         http(url, type:, retry_interval:, retries:, backoff:, success_codes:, tries: (tries + 1))
-      end
-    end
-
-    def process_user_data
-      response = http("http://#{IMDS_HOST}/latest/user-data",
-        headers: { "X-aws-ec2-metadata-token" => @token })
-
-      if response.body.start_with?("#!/bin/bash")
-        run response.body
-      else
-        $stderr.puts "User data does not contain runable script."
       end
     end
 
