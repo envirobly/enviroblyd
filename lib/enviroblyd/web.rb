@@ -22,7 +22,7 @@ class Enviroblyd::Web
     else
       init_url = ENV.fetch "ENVIROBLYD_INIT_URL"
       puts "Init URL: #{init_url}"
-      response = http(init_url, type: Net::HTTP::Put, retry_interval: 3, retries: 10, backoff: :exponential)
+      response = http(init_url, type: Net::HTTP::Put)
       puts "Init response code: #{response.code}"
 
       if response.code.to_i == 200
@@ -32,7 +32,7 @@ class Enviroblyd::Web
     end
   end
 
-  def http(url, type: Net::HTTP::Get, headers: {}, retry_interval: 2, retries: 30, backoff: false, tries: 1, params: nil)
+  def http(url, type: Net::HTTP::Get, params: nil, headers: {}, retry_interval: 3, retries: 10, backoff: :exponential, tries: 1)
     if retries <= tries
       $stderr.puts "Retried #{tries} times. Aborting."
       exit 1
@@ -41,15 +41,12 @@ class Enviroblyd::Web
     uri = URI(url)
     http = Net::HTTP.new uri.host, uri.port
     http.use_ssl = true if uri.scheme == "https"
-    http.open_timeout = 5
-    http.read_timeout = 5
+    http.open_timeout = 10
+    http.read_timeout = 10
 
     request = type.new(uri, default_headers.merge(headers))
     request.content_type = CONTENT_TYPE
-
-    unless params.nil?
-      request.body = JSON.dump params
-    end
+    request.body = JSON.dump(params) unless params.nil?
 
     response =
       begin
@@ -58,12 +55,11 @@ class Enviroblyd::Web
         :retry
       end
 
-    # https://developers.cloudflare.com/support/troubleshooting/cloudflare-errors/troubleshooting-cloudflare-1xxx-errors/
     if response == :retry || (500..599).include?(response.code.to_i)
       sleep_time = (backoff == :exponential) ? (retry_interval * tries) : retry_interval
       $stderr.puts "Retry #{uri} in #{sleep_time}s"
       sleep sleep_time
-      http(url, type:, retry_interval:, retries:, backoff:, tries: (tries + 1))
+      http(url, type:, params:, retry_interval:, retries:, backoff:, tries: (tries + 1))
     else
       response
     end
