@@ -8,11 +8,11 @@ class Enviroblyd::Daemon
   LISTEN_PORT = ENV.fetch("ENVIROBLYD_PORT", 63106).to_i
 
   def self.start
-    web = Enviroblyd::Web.new
-    web.register
-
     daemon = new
     daemon.listen
+
+    web = Enviroblyd::Web.new
+    web.register
   end
 
   def listen
