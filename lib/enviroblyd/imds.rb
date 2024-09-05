@@ -17,6 +17,6 @@ class Enviroblyd::IMDS
   end
 
   def private_ipv4
-    get "private_ipv4"
+    get "local-ipv4"
   end
 end
