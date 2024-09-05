@@ -33,8 +33,6 @@ class Enviroblyd::Daemon
         if params.nil?
           client.puts "Error parsing JSON"
         else
-          puts "Received valid JSON:"
-          puts params
           client.puts "OK"
         end
 
