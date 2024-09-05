@@ -8,16 +8,16 @@ class Enviroblyd::Daemon
   LISTEN_PORT = ENV.fetch("ENVIROBLYD_PORT", 63106).to_i
 
   def self.start
-    daemon = new
-    daemon.listen
-
-    web = Enviroblyd::Web.new
-    web.register
+    new.listen do
+      Enviroblyd::Web.register
+    end
   end
 
   def listen
     server = TCPServer.new LISTEN_PORT
     puts "Listening on port #{LISTEN_PORT}"
+
+    yield
 
     loop do
       Thread.start(server.accept) do |client|

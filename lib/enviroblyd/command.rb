@@ -13,7 +13,6 @@ class Enviroblyd::Command
   end
 
   def initialize(params)
-    @web = Enviroblyd::Web.new
     @url = params.fetch "url"
     @script = params.fetch "script"
     @runtime = params.fetch "runtime", DEFAULT_RUNTIME
@@ -23,7 +22,6 @@ class Enviroblyd::Command
 
   def run
     puts "Command #{@url} starting"
-
     Open3.popen3("timeout #{@timeout} #{@runtime}") do |stdin, stdout, stderr, thread|
       stdin.puts @script
       stdin.close
@@ -31,11 +29,10 @@ class Enviroblyd::Command
       @stderr = stderr.read
       @exit_code = thread.value.exitstatus
     end
-
     puts "Command #{@url} exited with #{@exit_code}"
     $stdout.flush
 
-    @web.http(@url, type: Net::HTTP::Put, params: to_complete_params)
+    Enviroblyd::Web.http(@url, type: Net::HTTP::Put, params: to_complete_params)
   end
 
   private
