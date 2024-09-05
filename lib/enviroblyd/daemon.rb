@@ -8,14 +8,16 @@ class Enviroblyd::Daemon
   LISTEN_PORT = ENV.fetch("ENVIROBLYD_PORT", 63106).to_i
 
   def self.start
-    new.listen do
+    imds = Enviroblyd::IMDS.new
+    host = imds.private_ipv4
+    new.listen(host) do
       Enviroblyd::Web.register
     end
   end
 
-  def listen
-    server = TCPServer.new LISTEN_PORT
-    puts "Listening on port #{LISTEN_PORT}"
+  def listen(host)
+    server = TCPServer.new host, LISTEN_PORT
+    puts "Listening on #{host}:#{LISTEN_PORT}"
 
     yield
 

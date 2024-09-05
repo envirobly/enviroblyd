@@ -8,5 +8,8 @@ end
 require "zeitwerk"
 
 loader = Zeitwerk::Loader.for_gem
+loader.inflector.inflect(
+  "imds" => "IMDS"
+)
 loader.setup
 loader.eager_load

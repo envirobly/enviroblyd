@@ -10,8 +10,6 @@ require "json"
 class Enviroblyd::Web
   USER_AGENT = "enviroblyd #{Enviroblyd::VERSION}"
   CONTENT_TYPE = "application/json"
-  # TOKEN_TTL_SECONDS = 30
-  # IMDS_HOST = ENV.fetch("ENVIROBLYD_IMDS_HOST", "169.254.169.254")
   API_HOST = ENV.fetch("ENVIROBLYD_API_HOST", "envirobly.com")
   WORKING_DIR = Pathname.new ENV.fetch("ENVIROBLYD_WORKING_DIR", "/var/envirobly/daemon")
   INITIALIZED_FILE = WORKING_DIR.join "initialized"
