@@ -6,6 +6,12 @@ class Enviroblyd::Command
   DEFAULT_TIMEOUT_SECONDS = 5 * 60
   DEFAULT_RUNTIME = "/bin/bash"
 
+  def self.run(params)
+    Thread.new do
+      new(params).run
+    end
+  end
+
   def initialize(params)
     @web = Enviroblyd::Web.new
     @url = params.fetch "url"
