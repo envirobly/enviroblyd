@@ -27,17 +27,17 @@ class Enviroblyd::Daemon
           begin
             JSON.parse client.recv(MAX_MESSAGE_SIZE)
           rescue
-            :invalid_json
+            nil
           end
 
-        if params == :invalid_json
+        if params.nil?
           client.puts "Error parsing JSON"
         else
           client.puts "OK"
         end
 
         client.close
-        Enviroblyd::Command.run(params)
+        Enviroblyd::Command.run(params) if params
       end
     end
   end
