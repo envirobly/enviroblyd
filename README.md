@@ -18,7 +18,6 @@ bin/dev
 # Point the daemon to the test server
 export ENVIROBLYD_INIT_URL=http://localhost:11880/initialize
 export ENVIROBLYD_IMDS_HOST=localhost:11880
-export ENVIROBLYD_API_HOST=localhost:11880
 
 ruby -Ilib/ bin/enviroblyd
 
