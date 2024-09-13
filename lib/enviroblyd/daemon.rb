@@ -25,24 +25,28 @@ class Enviroblyd::Daemon
 
     loop do
       Thread.start(server.accept) do |client|
-        params =
-          begin
-            JSON.parse client.recv(MAX_MESSAGE_SIZE)
-          rescue
-            nil
-          end
+        params = parse_message client.recv(MAX_MESSAGE_SIZE)
 
         if params.nil?
-          client.puts "Error parsing JSON"
-          client.close
-        else
-          client.puts "OK"
-          client.close
-
-          command = Enviroblyd::Command.new(params)
-          command.run
+          client.puts "Invalid message"
+          next
         end
+
+        client.puts "OK"
+        client.close
+
+        command = Enviroblyd::Command.new(params)
+        command.run
+      ensure
+        client.close
+        GC.start
       end
     end
+  end
+
+  def parse_message(message)
+    JSON.parse message
+  rescue
+    nil
   end
 end
