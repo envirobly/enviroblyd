@@ -33,6 +33,15 @@ server.mount_proc "/latest/meta-data/local-ipv4" do |req, res|
   end
 end
 
+server.mount_proc "/initialize" do |req, res|
+  if req.request_method == "PUT"
+    res.status = 200
+  else
+    res.status = 405
+    res.body = "Only PUT requests are allowed here."
+  end
+end
+
 server.mount_proc "/command" do |req, res|
   if req.request_method == "PUT"
     puts "Command params received:"
