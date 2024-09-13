@@ -10,16 +10,18 @@ class Enviroblyd::Daemon
   def self.start
     imds = Enviroblyd::IMDS.new
     host = imds.private_ipv4
-    new.listen(host) do
-      Enviroblyd::Web.register
-    end
+    daemon = new(host)
+    daemon.listen
   end
 
-  def listen(host)
-    server = TCPServer.new host, LISTEN_PORT
-    puts "Listening on #{host}:#{LISTEN_PORT}"
+  def initialize(host)
+    @host = host
+  end
 
-    yield
+  def listen
+    server = TCPServer.new @host, LISTEN_PORT
+    puts "Listening on #{@host}:#{LISTEN_PORT}"
+    Enviroblyd::Web.register
 
     loop do
       Thread.start(server.accept) do |client|
@@ -32,12 +34,14 @@ class Enviroblyd::Daemon
 
         if params.nil?
           client.puts "Error parsing JSON"
+          client.close
         else
           client.puts "OK"
-        end
+          client.close
 
-        client.close
-        Enviroblyd::Command.run(params) if params
+          command = Enviroblyd::Command.new(params)
+          command.run
+        end
       end
     end
   end
