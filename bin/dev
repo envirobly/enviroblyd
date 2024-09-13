@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "webrick"
+require "securerandom"
+
+port = ENV.fetch("PORT", 11880).to_i
+server = WEBrick::HTTPServer.new(Port: port)
+puts "Test server listening on port #{port}"
+
+# Graceful shutdown on Ctrl-C
+trap("INT") { server.shutdown }
+
+server.mount_proc "/latest/api/token" do |req, res|
+  if req.request_method == "PUT"
+    res.status = 200
+    res["Content-Type"] = "text/plain"
+    res.body = SecureRandom.hex(5)
+  else
+    res.status = 405
+    res.body = "Only PUT requests are allowed here."
+  end
+end
+
+server.mount_proc "/latest/meta-data/local-ipv4" do |req, res|
+  if req.request_method == "GET"
+    res.status = 200
+    res["Content-Type"] = "text/plain"
+    res.body = "127.0.0.1"
+  else
+    res.status = 405
+    res.body = "Only GET requests are allowed here."
+  end
+end
+
+server.mount_proc "/command" do |req, res|
+  if req.request_method == "PUT"
+    puts "Command params received:"
+    puts req.body
+    res.status = 200
+    res["Content-Type"] = "text/plain"
+  else
+    res.status = 405
+    res.body = "Only PUT requests are allowed here."
+  end
+end
+
+server.start

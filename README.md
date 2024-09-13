@@ -12,14 +12,17 @@ gem install enviroblyd --no-document
 ```sh
 ruby -Ilib/ bin/enviroblyctl version
 
-# In development override the hosts:
-export ENVIROBLYD_IMDS_HOST=envirobly.test
-export ENVIROBLYD_API_HOST=envirobly.test
+# Run the test server (separate tab)
+bin/dev
+
+# Point the daemon to the test server
+export ENVIROBLYD_IMDS_HOST=localhost:11880
+export ENVIROBLYD_API_HOST=localhost:11880
 
 ruby -Ilib/ bin/enviroblyd
 
 # Sending a test message after daemon is running:
-bin/python-send-tcp-message '{ "script": "ls", "url": "http://envirobly.test/api/v1/dummy" }'
+bin/python-send-tcp-message '{ "script": "ls", "url": "http://localhost:11880/command" }'
 ```
 
 ### Publishing the gem
