@@ -3,4 +3,12 @@
 
 require "enviroblyd"
 
-Enviroblyd::Daemon.start
+daemon = Enviroblyd::Daemon.new
+
+trap "INT" do
+  puts "Gracefully shutting down..."
+  daemon&.shutdown
+  exit
+end
+
+daemon.listen

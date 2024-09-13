@@ -33,8 +33,8 @@ class Enviroblyd::Web
 
     def http(url, type: Net::HTTP::Get, params: nil, headers: {}, retry_interval: 3, retries: 10, backoff: :exponential, tries: 1)
       if retries <= tries
-        $stderr.puts "Retried #{tries} times. Aborting."
-        exit 1
+        puts "Retried #{url} #{tries} times. Aborting."
+        return
       end
 
       uri = URI(url)
@@ -56,7 +56,7 @@ class Enviroblyd::Web
 
       if response == :retry || (500..599).include?(response.code.to_i)
         sleep_time = (backoff == :exponential) ? (retry_interval * tries) : retry_interval
-        $stderr.puts "Retry #{uri} in #{sleep_time}s"
+        puts "Retry #{uri} in #{sleep_time}s"
         sleep sleep_time
         http(url, type:, params:, retry_interval:, retries:, backoff:, tries: (tries + 1))
       else
