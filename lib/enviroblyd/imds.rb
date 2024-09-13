@@ -6,7 +6,7 @@ class Enviroblyd::IMDS
 
   def initialize
     @token = Enviroblyd::Web.http("http://#{IMDS_HOST}/latest/api/token",
-      type: Net::HTTP::Get,
+      type: Net::HTTP::Put,
       headers: { "X-aws-ec2-metadata-token-ttl-seconds" => TOKEN_TTL_SECONDS.to_s }).
       body.strip
   end

@@ -40,6 +40,7 @@ class Enviroblyd::Daemon
         client.close
         command = nil
         message = nil
+        client = nil
         GC.start
       end
     end
