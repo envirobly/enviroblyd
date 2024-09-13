@@ -24,9 +24,11 @@ class Enviroblyd::Daemon
 
     loop do
       Thread.start(server.accept) do |client|
-        command = Enviroblyd::Command.new client.recv(MAX_MESSAGE_SIZE)
+        message = client.recv(MAX_MESSAGE_SIZE)
+        command = Enviroblyd::Command.new message
 
         unless command.valid?
+          $stderr.puts "Invalid message received: #{message}"
           client.puts "Invalid message"
           next
         end
@@ -37,6 +39,7 @@ class Enviroblyd::Daemon
       ensure
         client.close
         command = nil
+        message = nil
         GC.start
       end
     end
