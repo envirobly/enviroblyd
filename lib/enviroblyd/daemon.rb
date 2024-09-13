@@ -39,6 +39,8 @@ class Enviroblyd::Daemon
         command.run
       ensure
         client.close
+        command = nil
+        params = nil
         GC.start
       end
     end
