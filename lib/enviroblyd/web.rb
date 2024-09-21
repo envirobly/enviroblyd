@@ -2,7 +2,6 @@
 
 require "net/http"
 require "uri"
-require "open3"
 require "fileutils"
 require "pathname"
 require "json"
