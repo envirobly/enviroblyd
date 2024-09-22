@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require "socket"
+
+host = "127.0.0.1"
+port = 63106
+message = ARGV[0]
+
+socket = TCPSocket.new(host, port)
+socket.write(message)
+data = socket.read(1024)
+socket.close
+
+puts "Received #{data.inspect}"
