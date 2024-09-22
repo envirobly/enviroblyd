@@ -49,10 +49,10 @@ class Enviroblyd::Web
         begin
           http.request(request)
         rescue
-          :retry
+          nil
         end
 
-      if response == :retry || (500..599).include?(response.code.to_i)
+      if response.nil? || (500..599).include?(response.code.to_i)
         sleep_time = (backoff == :exponential) ? (retry_interval * tries) : retry_interval
         puts "Retry #{uri} in #{sleep_time}s"
         sleep sleep_time
