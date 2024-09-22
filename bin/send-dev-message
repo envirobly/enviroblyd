@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+require "socket"
+require "zlib"
+require "json"
+require "base64"
+
+host = "127.0.0.1"
+port = 63106
+
+message = JSON.parse ARGV[0]
+message["script"] = Base64.encode64 Zlib::Deflate.deflate(message["script"])
+
+socket = TCPSocket.new(host, port)
+socket.write(message.to_json)
+data = socket.read(1024)
+socket.close
+
+puts "Received #{data.inspect}"

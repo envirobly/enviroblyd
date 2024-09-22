@@ -22,7 +22,7 @@ export ENVIROBLYD_IMDS_HOST=localhost:11880
 ruby -Ilib/ bin/enviroblyd
 
 # Sending a test message after daemon is running:
-bin/python-send-tcp-message '{ "script": "ls", "url": "http://localhost:11880/command" }'
+bin/send-dev-message '{ "script": "ls", "url": "http://localhost:11880/command" }'
 ```
 
 ### Publishing the gem
